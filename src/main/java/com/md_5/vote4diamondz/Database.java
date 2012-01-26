@@ -22,12 +22,26 @@ public final class Database {
         return true;
     }
 
+    public static void add(String player) {
+        try {
+            Connection conn = DriverManager.getConnection("jdbc:sqlite:plugins/Vote4Diamondz/users.db");
+            PreparedStatement stat = conn.prepareStatement("INSERT INTO players VALUES (?,0,0)");
+            stat.setString(1, player);
+            stat.executeUpdate();
+            stat.close();
+            conn.close();
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+    }
+
     public static HashMap<String, Integer> load(String player) {
         HashMap<String, Integer> result = new HashMap<String, Integer>();
         try {
             Connection conn = DriverManager.getConnection("jdbc:sqlite:plugins/Vote4Diamondz/users.db");
-            Statement stat = conn.createStatement();
-            ResultSet rs = stat.executeQuery("SELECT * FROM players WHERE name='" + player + "'");
+            PreparedStatement stat = conn.prepareStatement("SELECT * FROM players WHERE name = ?");
+            stat.setString(1, player);
+            ResultSet rs = stat.executeQuery();
             while (rs.next()) {
                 result.put("time", rs.getInt("time"));
                 result.put("count", rs.getInt("count"));
@@ -41,30 +55,18 @@ public final class Database {
         return result;
     }
 
-    public static boolean add(String player) {
+    public static void update(String name, int time, int count) {
         try {
             Connection conn = DriverManager.getConnection("jdbc:sqlite:plugins/Vote4Diamondz/users.db");
-            Statement stat = conn.createStatement();
-            stat.executeUpdate("INSERT INTO players values ('" + player + "'," + 0 + "," + 0 + ")");
-            stat.close();
-            conn.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return true;
-    }
-
-    public static boolean update(String name, int time, int count) {
-        try {
-            Connection conn = DriverManager.getConnection("jdbc:sqlite:plugins/Vote4Diamondz/users.db");
-            Statement stat = conn.createStatement();
-            stat.executeUpdate("update players set time=" + time + ", count=" + count + " WHERE name='" + name + "'");
+            PreparedStatement stat = conn.prepareStatement("UPDATE players SET time = ?, count = ? WHERE name = ?");
+            stat.setInt(1, time);
+            stat.setInt(2, count);
+            stat.setString(3, name);
             stat.close();
             conn.close();
         } catch (SQLException ex) {
             ex.printStackTrace();
         }
-        return true;
     }
 
     public static ArrayList<String> loadTop() {
@@ -72,7 +74,7 @@ public final class Database {
         try {
             Connection conn = DriverManager.getConnection("jdbc:sqlite:plugins/Vote4Diamondz/users.db");
             Statement stat = conn.createStatement();
-            ResultSet rs = stat.executeQuery("SELECT * FROM players ORDER BY count DESC LIMIT 3 ");
+            ResultSet rs = stat.executeQuery("SELECT name FROM players ORDER BY count DESC LIMIT 3");
             while (rs.next()) {
                 top.add(rs.getString("name"));
             }

@@ -57,9 +57,9 @@ public class Vote4Diamondz extends JavaPlugin {
             return true;
         }
         sender.sendMessage(ChatColor.BLUE + "Vote4Diamondz by md_5 top voters: ");
-        sender.sendMessage(ChatColor.BLUE + "" + top.get(0));
-        sender.sendMessage(ChatColor.BLUE + "" + top.get(1));
-        sender.sendMessage(ChatColor.BLUE + "" + top.get(2));
+        sender.sendMessage(ChatColor.BLUE + top.get(0));
+        sender.sendMessage(ChatColor.BLUE + top.get(1));
+        sender.sendMessage(ChatColor.BLUE + top.get(2));
         return true;
     }
 }
