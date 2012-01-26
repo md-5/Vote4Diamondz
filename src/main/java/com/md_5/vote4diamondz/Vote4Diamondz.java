@@ -3,7 +3,6 @@ package com.md_5.vote4diamondz;
 import java.io.IOException;
 import java.net.BindException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.logging.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -15,8 +14,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 public class Vote4Diamondz extends JavaPlugin {
 
     static final Logger logger = Bukkit.getServer().getLogger();
-    public static HashMap<String, Integer> votes = new HashMap<String, Integer>();
-    public static HashMap<String, Integer> playerTimes = new HashMap<String, Integer>();
     Listener server;
     int port = 6666;
     public static int reward = 1;

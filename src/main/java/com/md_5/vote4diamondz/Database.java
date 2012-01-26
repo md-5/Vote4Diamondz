@@ -1,67 +1,11 @@
 package com.md_5.vote4diamondz;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import org.bukkit.Bukkit;
 
 public final class Database {
-
-    public static boolean load(String player) {
-        try {
-            Class.forName("org.sqlite.JDBC");
-            Connection conn = DriverManager.getConnection("jdbc:sqlite:plugins/Vote4Diamondz/users.db");
-            Statement stat = conn.createStatement();
-            ResultSet rs = stat.executeQuery("select * from players WHERE name='" + player + "'");
-            while (rs.next()) {
-                Vote4Diamondz.playerTimes.put(rs.getString("name"), rs.getInt("time"));
-                Vote4Diamondz.votes.put(rs.getString("name"), rs.getInt("time"));
-            }
-            stat.close();
-            rs.close();
-            conn.close();
-        } catch (ClassNotFoundException e) {
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return true;
-    }
-
-    public static boolean add(String player) {
-        try {
-            Class.forName("org.sqlite.JDBC");
-            Connection conn = DriverManager.getConnection("jdbc:sqlite:plugins/Vote4Diamondz/users.db");
-            Statement stat = conn.createStatement();
-            Vote4Diamondz.votes.put(player, 0);
-            Vote4Diamondz.playerTimes.put(player, 0);
-            stat.executeUpdate("insert into players values ('" + player + "',"
-                    + Vote4Diamondz.playerTimes.get(player) + "," + Vote4Diamondz.votes.get(player) + ")");
-            stat.close();
-            conn.close();
-        } catch (ClassNotFoundException e) {
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return true;
-    }
-
-    public static boolean update(String player) {
-        try {
-            Class.forName("org.sqlite.JDBC");
-            Connection conn = DriverManager.getConnection("jdbc:sqlite:plugins/Vote4Diamondz/users.db");
-            Statement stat = conn.createStatement();
-            stat.executeUpdate("update players set time=" + (int) (System.currentTimeMillis() / 1000L)
-                    + ", count=" + Vote4Diamondz.votes.get(player) + " WHERE name='" + player + "'");
-            stat.close();
-            conn.close();
-        } catch (ClassNotFoundException e) {
-        } catch (SQLException e) {
-        }
-        return true;
-    }
 
     public static boolean init() {
         try {
@@ -72,9 +16,53 @@ public final class Database {
             stat.executeUpdate("create table if not exists players (name text, time numeric, count numeric)");
             stat.close();
             conn.close();
-        } catch (ClassNotFoundException e) {
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return true;
+    }
+
+    public static HashMap<String, Integer> load(String player) {
+        HashMap<String, Integer> result = new HashMap<String, Integer>();
+        try {
+            Connection conn = DriverManager.getConnection("jdbc:sqlite:plugins/Vote4Diamondz/users.db");
+            Statement stat = conn.createStatement();
+            ResultSet rs = stat.executeQuery("SELECT * FROM players WHERE name='" + player + "'");
+            while (rs.next()) {
+                result.put("time", rs.getInt("time"));
+                result.put("count", rs.getInt("count"));
+            }
+            stat.close();
+            rs.close();
+            conn.close();
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        return result;
+    }
+
+    public static boolean add(String player) {
+        try {
+            Connection conn = DriverManager.getConnection("jdbc:sqlite:plugins/Vote4Diamondz/users.db");
+            Statement stat = conn.createStatement();
+            stat.executeUpdate("INSERT INTO players values ('" + player + "'," + 0 + "," + 0 + ")");
+            stat.close();
+            conn.close();
         } catch (SQLException e) {
             e.printStackTrace();
+        }
+        return true;
+    }
+
+    public static boolean update(String name, int time, int count) {
+        try {
+            Connection conn = DriverManager.getConnection("jdbc:sqlite:plugins/Vote4Diamondz/users.db");
+            Statement stat = conn.createStatement();
+            stat.executeUpdate("update players set time=" + time + ", count=" + count + " WHERE name='" + name + "'");
+            stat.close();
+            conn.close();
+        } catch (SQLException ex) {
+            ex.printStackTrace();
         }
         return true;
     }
@@ -82,7 +70,6 @@ public final class Database {
     public static ArrayList<String> loadTop() {
         ArrayList<String> top = new ArrayList<String>();
         try {
-            Class.forName("org.sqlite.JDBC");
             Connection conn = DriverManager.getConnection("jdbc:sqlite:plugins/Vote4Diamondz/users.db");
             Statement stat = conn.createStatement();
             ResultSet rs = stat.executeQuery("SELECT * FROM players ORDER BY count DESC LIMIT 3 ");
@@ -92,7 +79,6 @@ public final class Database {
             stat.close();
             rs.close();
             conn.close();
-        } catch (ClassNotFoundException e) {
         } catch (SQLException e) {
             e.printStackTrace();
         }

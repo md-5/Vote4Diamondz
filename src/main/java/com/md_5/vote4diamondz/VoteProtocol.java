@@ -1,13 +1,18 @@
 package com.md_5.vote4diamondz;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.inventory.ItemStack;
 
 public class VoteProtocol {
 
-    public String processInput(String theInput) {
+    public static int currentTime() {
+        return (int) (System.currentTimeMillis() / 1000L);
+    }
+
+    public static String processInput(String theInput) {
         // Variables
         String[] processed = null;
         String name = null;
@@ -41,34 +46,29 @@ public class VoteProtocol {
         }
         // Process
         if (request.equals("CLAIM")) {
-            Database.load(name);
+            HashMap<String, Integer> query = Database.load(name);
+            int time = query.get("time");
+            int count = query.get("count");
             // Add new users
-            if (!Vote4Diamondz.playerTimes.containsKey(name) || !Vote4Diamondz.votes.containsKey(name)) {
+            if (time == 0) {
                 Database.add(name);
             }
             // Check times
-            if ((((int) (System.currentTimeMillis() / 1000L) - Vote4Diamondz.playerTimes.get(name)) >= 86400)) {
+            if (currentTime() - time >= 86400) {
                 give(name, Vote4Diamondz.reward, Vote4Diamondz.amount);
-                Integer count = Vote4Diamondz.votes.get(name);
                 count++;
-                Vote4Diamondz.votes.put(name, count);
-                Database.update(name);
-                Vote4Diamondz.votes.remove(name);
-                Vote4Diamondz.playerTimes.remove(name);
+                Database.update(name, time, count);
             } else {
                 // Send message
-                try {
-                    Bukkit.getServer().getPlayer(name).sendMessage(ChatColor.RED + "You can only vote once per day!");
-                    Vote4Diamondz.votes.remove(name);
-                    Vote4Diamondz.playerTimes.remove(name);
-                } catch (Exception ex) {
-                }
+                // CATCH
+                Bukkit.getServer().getPlayer(name).sendMessage(ChatColor.RED + "You can only vote once per day!");
             }
         }
         return null;
     }
 
-    public void give(String name, int item, int amount) {
+    //CATCH
+    public static void give(String name, int item, int amount) {
         // Give stuffs
         try {
             Bukkit.getServer().getPlayer(name).getInventory().addItem(new ItemStack(item, amount));
