@@ -5,15 +5,14 @@ import java.net.ServerSocket;
 
 public class Listener extends Thread {
 
-    private int port;
-    private ServerSocket listener;
+    public ServerSocket listener;
 
     public Listener(int port) {
-        this.port = port;
-    }
-
-    public void startListener() throws IOException {
-        listener = new ServerSocket(port);
+        try {
+            listener = new ServerSocket(port);
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
     }
 
     @Override
@@ -23,10 +22,15 @@ public class Listener extends Thread {
                 (new Thread(new Handler(listener.accept()))).start();
             }
         } catch (IOException ex) {
+            ex.printStackTrace();
         }
     }
 
-    public ServerSocket getListener() {
-        return listener;
+    public void close() {
+        try {
+            listener.close();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
     }
 }
