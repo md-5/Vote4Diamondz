@@ -1,0 +1,45 @@
+<script type="text/javascript">
+    var a,b,c;
+    function check(site) {
+        switch (site.id) {
+            case "SITE1":
+                a = true;
+                break;
+            case "SITE2":
+                b = true;
+                break;
+            case "SITE3":
+                c = true;
+                break;
+            case "CLAIM":
+                if (a & b & c) {
+                    var x = document.forms["voting"]["name"].value;
+                    if (x == null || x == "") {
+                        alert("Minecraft name must be filled out");
+                        return;
+                    }
+                    var xmlhttp = new XMLHttpRequest();
+                    xmlhttp.open("GET", "http://mc.shadowraze.net:6666/" + x, true);
+                    xmlhttp.send();
+                    alert('Thank you! If you are in game and have not already voted you will now have your reward!');
+                } else {
+                    alert("You have not voted on all sites!");
+                }
+                break;
+        }
+    }
+</script>
+
+<form name="voting">
+    <div style="text-align: center;"> Minecraft Name:&nbsp
+        <input name="name" type="text"/>
+        <p>
+        <a href="http://minecraftservers.net/vote.php?id=4696" target="_blank"><img src="http://minecraftservers.net/images/serverpics/4696_IMG.png" id="SITE1" onclick="check(this)"/></a>
+        <p>
+        <a href="http://www.xtremetop100.com/in.php?site=1132326416" target="_blank"><img src="http://mcserverstatus.com/4816_1.png" id="SITE2" onclick="check(this)"/></a>
+        <p>
+        <a href="http://minestatus.net/22289-shadowraze/vote" target="_blank"><img src="http://minestatus.net/22289-shadowraze/image/original.png" id="SITE3" onclick="check(this)"/></a>
+        <p>
+        <input id="CLAIM" value="Claim!" onclick="check(this);" type="button" />
+    </div>
+</form>
