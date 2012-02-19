@@ -1,17 +1,17 @@
 name: Vote4Diamondz
 version: 4.0
-description: Bukkit plugin to automatically give people rewards for voting via custom php script.
+description: Bukkit plugin to automatically give people rewards for voting. Now includes inbuilt web server!
 author: md_5
 website: https://github.com/Shadowraze/Vote4Diamondz
 
 main: net.shadowraze.vote4diamondz.Vote4Diamondz
 
 commands:
-    votes:
-        description: View the top 3 voting players
-        permission: vote4diamondz.votes
+  votes:
+    description: View the top 3 voting players
+    permission: vote4diamondz.votes
 
 permissions:
-    vote4diamondz.votes:
-        description: Allows use of the top votes command
-        default: true
+  vote4diamondz.votes:
+    description: Allows use of the top votes command
+    default: true
