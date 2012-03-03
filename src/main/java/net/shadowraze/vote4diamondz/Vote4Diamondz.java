@@ -74,16 +74,16 @@ public class Vote4Diamondz extends JavaPlugin {
 
     private void processInput(String name) {
         // Process
-        HashMap<String, Integer> query = load(name);
-        // Add new users
-        if (query.isEmpty()) {
-            add(name);
-        }
-        query = load(name);
-        int time = query.get("time");
-        int count = query.get("count");
         Player player = Bukkit.getServer().getPlayer(name);
         if (player != null) {
+            HashMap<String, Integer> query = load(name);
+            // Add new users
+            if (query.isEmpty()) {
+                add(name);
+            }
+            query = load(name);
+            int time = query.get("time");
+            int count = query.get("count");
             if (currentTime() - time >= 86400) {
                 player.sendMessage(ChatColor.LIGHT_PURPLE + "You have received your reward. Thanks for voting!");
                 player.getInventory().addItem(reward);
@@ -146,19 +146,19 @@ public class Vote4Diamondz extends JavaPlugin {
                 out.write(("HTTP/1.1 200 OK\r\n"
                         + "Date: " + new Date().toString() + "\r\n"
                         + "Content-Type: text/html\r\n"
-                        + "\r\n"
                         + "\r\n").getBytes());
                 if (!query.isEmpty()) {
                     processInput(query);
                 } else {
+                    out.write("<style type=\"text/css\">* { color: #D1CAB3; }</style>".getBytes());
                     for (String name : loadTop(0)) {
                         out.write((name + " has voted " + load(name).get("count") + " times <br>\n").getBytes());
                     }
                 }
                 out.flush();
-                out.close();
+                socket.close();
             } catch (Exception ex) {
-                ex.printStackTrace();
+                //ex.printStackTrace();
             }
         }
     }
