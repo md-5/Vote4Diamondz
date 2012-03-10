@@ -113,7 +113,6 @@ public class Vote4Diamondz extends JavaPlugin {
                 try {
                     new RequestThread(serverSocket.accept()).start();
                 } catch (IOException ex) {
-                    ex.printStackTrace();
                 }
             }
         }
