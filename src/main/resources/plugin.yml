@@ -1,8 +1,8 @@
-name: Vote4Diamondz
-version: 4.0
-description: Bukkit plugin to automatically give people rewards for voting. Now includes inbuilt web server!
+name: ${project.name}
+version: ${build.number}
+description: ${project.description}
 author: md_5
-website: https://github.com/Shadowraze/Vote4Diamondz
+website: ${project.url}
 
 main: net.shadowraze.vote4diamondz.Vote4Diamondz
 

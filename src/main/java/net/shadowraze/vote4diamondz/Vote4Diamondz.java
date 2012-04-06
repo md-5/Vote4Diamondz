@@ -16,13 +16,13 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class Vote4Diamondz extends JavaPlugin {
 
     private WebServer server;
-    private ItemStack reward;
+    private String command;
+    private boolean broadcast;
     private final String URL = "jdbc:sqlite:plugins/Vote4Diamondz/users.sqlite";
 
     @Override
@@ -30,7 +30,8 @@ public class Vote4Diamondz extends JavaPlugin {
         FileConfiguration conf = getConfig();
         conf.options().copyDefaults(true);
         saveConfig();
-        reward = new ItemStack(conf.getInt("id"), conf.getInt("amount"));
+        command = conf.getString("command");
+        broadcast = conf.getBoolean("broadcast");
         init();
         server = new WebServer(conf.getInt("port"));
         server.start();
@@ -85,8 +86,12 @@ public class Vote4Diamondz extends JavaPlugin {
             int time = query.get("time");
             int count = query.get("count");
             if (currentTime() - time >= 86400) {
-                player.sendMessage(ChatColor.LIGHT_PURPLE + "You have received your reward. Thanks for voting!");
-                player.getInventory().addItem(reward);
+                if (broadcast) {
+                    getServer().broadcastMessage(ChatColor.LIGHT_PURPLE + name + "just voted for the server");
+                } else {
+                    player.sendMessage(ChatColor.LIGHT_PURPLE + "You have received your reward. Thanks for voting!");
+                }
+                getServer().dispatchCommand(getServer().getConsoleSender(), String.format(command, name));
                 update(name, currentTime(), count + 1);
             } else {
                 player.sendMessage(ChatColor.RED + "You can only vote once per day!");

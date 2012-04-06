@@ -1,4 +1,4 @@
-# Vote4Diamondz Config
-id: 1
-amount: 64
+# ${project.name} config, %1$s = player name
+command: give %1$s 1 64
 port: 5555
+broadcast: true

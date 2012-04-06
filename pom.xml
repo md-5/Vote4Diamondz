@@ -4,16 +4,26 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>net.shadowraze</groupId>
-    <artifactId>Vote4Diamondz</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <artifactId>vote4diamondz</artifactId>
+    <version>dev-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>Vote4Diamondz</name>
+    <description>Bukkit plugin to automatically give people rewards for voting. Now includes inbuilt web server!</description>
     <url>https://github.com/Shadowraze/Vote4Diamondz</url>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <build.number>Unknown</build.number>
     </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.bukkit</groupId>
+            <artifactId>bukkit</artifactId>
+            <version>1.2.5-R1.1</version>
+        </dependency>
+    </dependencies>
 
     <repositories>
         <repository>
@@ -22,11 +32,24 @@
         </repository>
     </repositories>
 
-    <dependencies>
-        <dependency>
-            <groupId>org.bukkit</groupId>
-            <artifactId>bukkit</artifactId>
-            <version>1.2.3-R0.2-SNAPSHOT</version>
-        </dependency>
-    </dependencies>
+    <build>
+        <finalName>${project.name}</finalName>
+        <resources>
+            <resource>
+                <filtering>true</filtering>
+                <directory>${project.basedir}/src/main/resources</directory>
+            </resource>
+        </resources>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.3.2</version>
+                <configuration>
+                    <source>1.5</source>
+                    <target>1.5</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>
