@@ -22,6 +22,7 @@ public class Vote4Diamondz extends JavaPlugin {
 
     private WebServer server;
     private String command;
+    private String message;
     private boolean broadcast;
     private final String URL = "jdbc:sqlite:plugins/Vote4Diamondz/users.sqlite";
 
@@ -32,6 +33,7 @@ public class Vote4Diamondz extends JavaPlugin {
         saveConfig();
         command = conf.getString("command");
         broadcast = conf.getBoolean("broadcast");
+        message = conf.getString("message");
         init();
         server = new WebServer(conf.getInt("port"));
         server.start();
@@ -87,7 +89,7 @@ public class Vote4Diamondz extends JavaPlugin {
             int count = query.get("count");
             if (currentTime() - time >= 86400) {
                 if (broadcast) {
-                    getServer().broadcastMessage(ChatColor.LIGHT_PURPLE + name + "just voted for the server");
+                    getServer().broadcastMessage(ChatColor.LIGHT_PURPLE + name + message);
                 } else {
                     player.sendMessage(ChatColor.LIGHT_PURPLE + "You have received your reward. Thanks for voting!");
                 }

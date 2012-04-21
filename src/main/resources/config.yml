@@ -2,3 +2,4 @@
 command: give %1$s 1 64
 port: 5555
 broadcast: true
+message:  just voted for the server
