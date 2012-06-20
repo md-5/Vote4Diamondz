@@ -60,10 +60,11 @@ public class Vote4Diamondz extends JavaPlugin implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerJoin(PlayerJoinEvent event) {
-        HashMap<String, Integer> query = load(event.getPlayer().getName());
+        Player player = event.getPlayer();
+        HashMap<String, Integer> query = load(player.getName());
         int time = query.get("time");
         if (currentTime() - time >= INTERVAL || time == 0) {
-            event.getPlayer().sendMessage(nag);
+            event.getPlayer().sendMessage(MessageFormat.format(nag, player.getName()));
         }
     }
 
