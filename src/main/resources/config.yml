@@ -4,5 +4,6 @@ commands:
   - pay {0} 100
 port: 5555
 broadcast: true
-message: '{0} just voted for the server'
+message: '&d{0} just voted for the server'
+nag: '&ewe noticed you have not voted today, please do so'
 header: '<style type=\"text/css\">* { color: #D1CAB3; }</style>'

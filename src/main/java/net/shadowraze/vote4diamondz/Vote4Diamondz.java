@@ -18,15 +18,21 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
-public class Vote4Diamondz extends JavaPlugin {
+public class Vote4Diamondz extends JavaPlugin implements Listener {
 
     private WebServer server;
     private List<String> commands;
     private String message;
+    private String nag;
     private String header;
     private boolean broadcast;
+    public static final int INTERVAL = 86400;
     private static final String URL = "jdbc:sqlite:plugins/Vote4Diamondz/users.sqlite";
 
     @Override
@@ -36,9 +42,13 @@ public class Vote4Diamondz extends JavaPlugin {
         saveConfig();
         commands = conf.getStringList("commands");
         broadcast = conf.getBoolean("broadcast");
-        message = conf.getString("message");
+        message = ChatColor.translateAlternateColorCodes('&', conf.getString("message"));
+        nag = ChatColor.translateAlternateColorCodes('&', conf.getString("nag"));
         header = conf.getString("header");
+        //
         init();
+        getServer().getPluginManager().registerEvents(this, this);
+        //
         server = new WebServer(conf.getInt("port"));
         server.start();
     }
@@ -46,6 +56,15 @@ public class Vote4Diamondz extends JavaPlugin {
     @Override
     public void onDisable() {
         server.shutdown();
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onPlayerJoin(PlayerJoinEvent event) {
+        HashMap<String, Integer> query = load(event.getPlayer().getName());
+        int time = query.get("time");
+        if (currentTime() - time >= INTERVAL || time == 0) {
+            event.getPlayer().sendMessage(nag);
+        }
     }
 
     @Override
@@ -84,16 +103,11 @@ public class Vote4Diamondz extends JavaPlugin {
         Player player = Bukkit.getServer().getPlayer(name);
         if (player != null) {
             HashMap<String, Integer> query = load(name);
-            // Add new users
-            if (query.isEmpty()) {
-                add(name);
-            }
-            query = load(name);
             int time = query.get("time");
             int count = query.get("count");
-            if (currentTime() - time >= 86400) {
+            if (currentTime() - time >= INTERVAL) {
                 if (broadcast) {
-                    getServer().broadcastMessage(ChatColor.LIGHT_PURPLE + MessageFormat.format(message, name));
+                    getServer().broadcastMessage(MessageFormat.format(message, name));
                 } else {
                     player.sendMessage(ChatColor.LIGHT_PURPLE + "You have received your reward. Thanks for voting!");
                 }
@@ -175,7 +189,7 @@ public class Vote4Diamondz extends JavaPlugin {
         }
     }
 
-    private void add(String player) {
+    private HashMap<String, Integer> add(String player) {
         try {
             Connection conn = DriverManager.getConnection(URL);
             PreparedStatement stat = conn.prepareStatement("INSERT INTO players VALUES (?,0,0)");
@@ -183,8 +197,10 @@ public class Vote4Diamondz extends JavaPlugin {
             stat.executeUpdate();
             stat.close();
             conn.close();
+            return load(player);
         } catch (SQLException ex) {
             ex.printStackTrace();
+            return null;
         }
     }
 
@@ -195,9 +211,11 @@ public class Vote4Diamondz extends JavaPlugin {
             PreparedStatement stat = conn.prepareStatement("SELECT time,count FROM players WHERE name = ?");
             stat.setString(1, player);
             ResultSet rs = stat.executeQuery();
-            while (rs.next()) {
+            if (rs.next()) {
                 result.put("time", rs.getInt("time"));
                 result.put("count", rs.getInt("count"));
+            } else {
+                result = add(player);
             }
             stat.close();
             rs.close();
