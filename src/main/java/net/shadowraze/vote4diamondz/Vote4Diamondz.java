@@ -7,9 +7,11 @@ import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.sql.*;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -21,19 +23,21 @@ import org.bukkit.plugin.java.JavaPlugin;
 public class Vote4Diamondz extends JavaPlugin {
 
     private WebServer server;
-    private String command;
+    private List<String> commands;
     private String message;
+    private String header;
     private boolean broadcast;
-    private final String URL = "jdbc:sqlite:plugins/Vote4Diamondz/users.sqlite";
+    private static final String URL = "jdbc:sqlite:plugins/Vote4Diamondz/users.sqlite";
 
     @Override
     public void onEnable() {
         FileConfiguration conf = getConfig();
         conf.options().copyDefaults(true);
         saveConfig();
-        command = conf.getString("command");
+        commands = conf.getStringList("commands");
         broadcast = conf.getBoolean("broadcast");
         message = conf.getString("message");
+        header = conf.getString("header");
         init();
         server = new WebServer(conf.getInt("port"));
         server.start();
@@ -89,11 +93,13 @@ public class Vote4Diamondz extends JavaPlugin {
             int count = query.get("count");
             if (currentTime() - time >= 86400) {
                 if (broadcast) {
-                    getServer().broadcastMessage(ChatColor.LIGHT_PURPLE + name + message);
+                    getServer().broadcastMessage(ChatColor.LIGHT_PURPLE + MessageFormat.format(message, name));
                 } else {
                     player.sendMessage(ChatColor.LIGHT_PURPLE + "You have received your reward. Thanks for voting!");
                 }
-                getServer().dispatchCommand(getServer().getConsoleSender(), String.format(command, name));
+                for (String command : commands) {
+                    getServer().dispatchCommand(getServer().getConsoleSender(), MessageFormat.format(command, name));
+                }
                 update(name, currentTime(), count + 1);
             } else {
                 player.sendMessage(ChatColor.RED + "You can only vote once per day!");
@@ -156,7 +162,7 @@ public class Vote4Diamondz extends JavaPlugin {
                 if (!query.isEmpty()) {
                     processInput(query);
                 } else {
-                    out.write("<style type=\"text/css\">* { color: #D1CAB3; }</style>".getBytes());
+                    out.write(header.getBytes());
                     for (String name : loadTop(0)) {
                         out.write((name + " has voted " + load(name).get("count") + " times <br>\n").getBytes());
                     }
