@@ -72,7 +72,6 @@
                     <options>
                         <option>-keepattributes *Annotation*</option>
                         <option>-keep public class * extends org.bukkit.plugin.java.JavaPlugin</option>
-                        <option>-keep,allowobfuscation public class * implements org.bukkit.event.Listener { @org.bukkit.event.EventHandler *; }</option>
                     </options>
                     <libs>
                         <lib>${java.home}/lib/rt.jar</lib>

@@ -24,13 +24,14 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
-public class Vote4Diamondz extends JavaPlugin implements Listener {
+public class Vote4Diamondz extends JavaPlugin {
 
     private WebServer server;
     private List<String> commands;
     private String message;
     private String nag;
     private String header;
+    private int nagTime;
     private boolean broadcast;
     public static final int INTERVAL = 86400;
     private static final String URL = "jdbc:sqlite:plugins/Vote4Diamondz/users.sqlite";
@@ -44,28 +45,33 @@ public class Vote4Diamondz extends JavaPlugin implements Listener {
         broadcast = conf.getBoolean("broadcast");
         message = ChatColor.translateAlternateColorCodes('&', conf.getString("message"));
         nag = ChatColor.translateAlternateColorCodes('&', conf.getString("nag"));
+        nagTime = conf.getInt("nag-time");
+        if (nagTime < 5) {
+            throw new IllegalArgumentException("Cannot set nag interval lower than 5 minutes");
+        }
         header = conf.getString("header");
         //
         init();
-        getServer().getPluginManager().registerEvents(this, this);
         //
         server = new WebServer(conf.getInt("port"));
         server.start();
+        //
+        getServer().getScheduler().scheduleAsyncRepeatingTask(this, new Runnable() {
+            public void run() {
+                for (Player player : getServer().getOnlinePlayers()) {
+                    HashMap<String, Integer> query = load(player.getName());
+                    int time = query.get("time");
+                    if (currentTime() - time >= INTERVAL || time == 0) {
+                        player.sendMessage(MessageFormat.format(nag, player.getName()));
+                    }
+                }
+            }
+        }, nagTime * 1200, nagTime * 1200);
     }
 
     @Override
     public void onDisable() {
         server.shutdown();
-    }
-
-    @EventHandler(priority = EventPriority.MONITOR)
-    public void onPlayerJoin(PlayerJoinEvent event) {
-        Player player = event.getPlayer();
-        HashMap<String, Integer> query = load(player.getName());
-        int time = query.get("time");
-        if (currentTime() - time >= INTERVAL || time == 0) {
-            event.getPlayer().sendMessage(MessageFormat.format(nag, player.getName()));
-        }
     }
 
     @Override

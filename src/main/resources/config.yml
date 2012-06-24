@@ -6,4 +6,5 @@ port: 5555
 broadcast: true
 message: '&d{0} just voted for the server'
 nag: '&eWe noticed you have not voted today, please do so'
+nag-time: 5
 header: '<style type=\"text/css\">* { color: #D1CAB3; }</style>'
