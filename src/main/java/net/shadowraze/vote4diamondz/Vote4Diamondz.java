@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.Callable;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -58,13 +59,22 @@ public class Vote4Diamondz extends JavaPlugin {
         //
         getServer().getScheduler().scheduleAsyncRepeatingTask(this, new Runnable() {
             public void run() {
+                final List<Player> toNag = new ArrayList<Player>();
                 for (Player player : getServer().getOnlinePlayers()) {
                     HashMap<String, Integer> query = load(player.getName());
                     int time = query.get("time");
                     if (currentTime() - time >= INTERVAL || time == 0) {
-                        player.sendMessage(MessageFormat.format(nag, player.getName()));
+                        toNag.add(player);
                     }
                 }
+                getServer().getScheduler().callSyncMethod(Vote4Diamondz.this, new Callable() {
+                    public Object call() throws Exception {
+                        for (Player player : toNag) {
+                            player.sendMessage(MessageFormat.format(nag, player.getName()));
+                        }
+                        return null;
+                    }
+                });
             }
         }, nagTime * 1200, nagTime * 1200);
     }
