@@ -2,27 +2,31 @@ package net.shadowraze.vote4diamondz;
 
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.sql.*;
+import java.text.DateFormat;
 import java.text.MessageFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.logging.FileHandler;
+import java.util.logging.Formatter;
+import java.util.logging.Handler;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
-import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class Vote4Diamondz extends JavaPlugin {
@@ -36,12 +40,31 @@ public class Vote4Diamondz extends JavaPlugin {
     private boolean broadcast;
     public static final int INTERVAL = 86400;
     private static final String URL = "jdbc:sqlite:plugins/Vote4Diamondz/users.sqlite";
+    private static final Logger logger = Logger.getLogger("Vote4Diamondz");
+    private static final DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     @Override
     public void onEnable() {
         FileConfiguration conf = getConfig();
         conf.options().copyDefaults(true);
         saveConfig();
+        //
+        logger.setUseParentHandlers(false);
+        try {
+            File logFile = new File(getDataFolder(), "votes.log");
+            logFile.createNewFile();
+            Handler handler = new FileHandler(logFile.getPath(), true);
+            handler.setFormatter(new Formatter() {
+                @Override
+                public String format(LogRecord record) {
+                    return "[" + format.format(System.currentTimeMillis()) + "] " + record.getMessage() + "\n";
+                }
+            });
+            logger.addHandler(handler);
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+        //
         commands = conf.getStringList("commands");
         broadcast = conf.getBoolean("broadcast");
         message = ChatColor.translateAlternateColorCodes('&', conf.getString("message"));
@@ -190,12 +213,16 @@ public class Vote4Diamondz extends JavaPlugin {
                         + "Date: " + new Date().toString() + "\r\n"
                         + "Content-Type: text/html\r\n"
                         + "\r\n").getBytes());
-                if (!query.isEmpty()) {
+                if (!query.isEmpty() && !query.equals("favicon.ico")) {
+                    logger.info("Got request from: " + socket.getInetAddress() + " user was: " + query);
                     processInput(query);
                 } else {
                     out.write(header.getBytes());
                     for (String name : loadTop(0)) {
-                        out.write((name + " has voted " + load(name).get("count") + " times <br>\n").getBytes());
+                        int count = load(name).get("count");
+                        if (count != 0) {
+                            out.write((name + " has voted " + count + " times <br>\n").getBytes());
+                        }
                     }
                 }
                 out.flush();
