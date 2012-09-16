@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>Vote4Diamondz</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="description" content="Vote for your favourite Minecraft server here!">
+        <meta name="author" content="md_5">
+        <link href="css/bootstrap.min.css" rel="stylesheet">
+        <link href="css/bootstrap-responsive.min.css" rel="stylesheet">
+        <style>
+            img {
+                padding-bottom: 10px;
+                cursor: pointer;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div class="container row span12">
+            <h1>Vote Here!</h1>
+            <p>Use this panel to vote for this server on several voting sites.<br>Then press Submit to claim your reward!</p>
+            <form>
+                <label>Enter your Minecraft IGN</label>
+                <input type="text" placeholder="Minecraft IGN">
+                <span class="help-block">Name is case sensitive.</span>
+                <label>Click on each of the banners below to vote.</label>
+                <!-- Begin sites -->
+                <div>
+                    <img src="http://minecraftservers.net/images/serverpics/4696_IMG.png" data-site="http://google.com">
+                </div>
+                <div>
+                    <img src="http://dl.dropbox.com/u/61952838/Screenshots/xtremetop100%20banner.png" data-site="http://google.com">
+                </div>
+                <div>
+                    <img src="https://dl.dropbox.com/u/61952838/Screenshots/tmlbanner-small.jpg" data-site="http://google.com">
+                </div>
+                <!-- End sites -->
+                <button type="submit" class="btn">Submit</button>
+            </form>
+        </div>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>
+        <script src="js/bootstrap.min.js"></script>
+        <script type="text/javascript">
+            $("img").click(function() {
+                window.open($(this).attr("data-site"),"_blank");
+            });
+            $("form").submit(function(e) {
+                e.preventDefault();
+                alert("You submitted"); 
+            });
+        </script>
+    </body>
+</html>

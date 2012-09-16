@@ -77,7 +77,7 @@ public abstract class WebServer implements Runnable {
                             // flip it so we can decode it
                             buf.flip();
                             // decode the bytes, handle it, and write the response
-                            client.write(encoder.encode(CharBuffer.wrap("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n" + handle(client, decoder.decode(buf).toString()) + "\r\n")));
+                            client.write(encoder.encode(CharBuffer.wrap("HTTP/1.1 200 OK\r\n\r\n" + handle(client, decoder.decode(buf).toString()) + "\r\n")));
                         }
                     } catch (Exception ex) {
                         System.err.println("Error handling client: " + key.channel());
