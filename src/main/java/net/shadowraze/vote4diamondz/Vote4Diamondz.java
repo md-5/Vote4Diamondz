@@ -140,7 +140,7 @@ public class Vote4Diamondz extends JavaPlugin {
 
     private void processInput(String name) {
         // Process
-        Player player = Bukkit.getServer().getPlayer(name);
+        Player player = Bukkit.getServer().getPlayerExact(name);
         if (player != null) {
             HashMap<String, Integer> query = load(name);
             int time = query.get("time");
