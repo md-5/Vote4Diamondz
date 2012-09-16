@@ -5,13 +5,3 @@ author: md_5
 website: ${project.url}
 
 main: net.shadowraze.vote4diamondz.Vote4Diamondz
-
-commands:
-  votes:
-    description: View the top 3 voting players
-    permission: vote4diamondz.votes
-
-permissions:
-  vote4diamondz.votes:
-    description: Allows use of the top votes command
-    default: true

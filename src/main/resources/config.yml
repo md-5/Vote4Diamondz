@@ -1,10 +1,4 @@
-# ${project.name} config, {0} = player name
-commands:
-  - give {0} 1 64
-  - pay {0} 100
+# ${project.name} config
+host: 0.0.0.0
 port: 5555
-broadcast: true
-message: '&d{0} just voted for the server'
-nag: '&eWe noticed you have not voted today, please do so'
-nag-time: 5
-header: '<style type=\"text/css\">* { color: #D1CAB3; }</style>'
+pollinterval: 2

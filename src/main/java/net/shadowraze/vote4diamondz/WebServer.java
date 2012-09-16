@@ -77,7 +77,7 @@ public abstract class WebServer implements Runnable {
                             // flip it so we can decode it
                             buf.flip();
                             // decode the bytes, handle it, and write the response
-                            client.write(encoder.encode(CharBuffer.wrap("HTTP/1.1 200 OK\r\n\r\n" + handle(client, decoder.decode(buf).toString()) + "\r\n")));
+                            client.write(encoder.encode(CharBuffer.wrap("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n" + handle(client, decoder.decode(buf).toString()) + "\r\n")));
                         }
                     } catch (Exception ex) {
                         System.err.println("Error handling client: " + key.channel());
@@ -94,11 +94,10 @@ public abstract class WebServer implements Runnable {
                     }
                 }
             } catch (IOException ex) {
+                // call it quits
+                shutdown();
                 // throw it as a runtime exception so that Bukkit can handle it
                 throw new RuntimeException(ex);
-            } finally {
-                // we are toast, lets not execute again
-                shutdown();
             }
         }
     }
@@ -111,12 +110,12 @@ public abstract class WebServer implements Runnable {
      * @return the string to be sent to the client. Must not include HTTP
      * headers.
      */
-    protected abstract String handle(SocketChannel client, String request);
+    protected abstract String handle(SocketChannel client, String request) throws IOException;
 
     /**
      * Shutdown this server, preventing it from handling any more requests.
      */
-    public void shutdown() {
+    public final void shutdown() {
         isRunning = false;
         try {
             selector.close();

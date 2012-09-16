@@ -65,7 +65,6 @@
                 <configuration>
                     <obfuscate>true</obfuscate>
                     <options>
-                        <option>-keepattributes *Annotation*</option>
                         <option>-keep public class * extends org.bukkit.plugin.java.JavaPlugin</option>
                     </options>
                     <libs>
