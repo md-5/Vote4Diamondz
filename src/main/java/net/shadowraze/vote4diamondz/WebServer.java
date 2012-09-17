@@ -18,15 +18,15 @@ import java.util.Iterator;
  *
  * @author md_5
  */
-public abstract class WebServer implements Runnable {
+public class WebServer implements Runnable {
 
-    private ByteBuffer buf = ByteBuffer.allocate(2048);
     private Charset charset = Charset.forName("UTF-8");
     private CharsetDecoder decoder = charset.newDecoder();
     private CharsetEncoder encoder = charset.newEncoder();
     private Selector selector = Selector.open();
     private ServerSocketChannel server = ServerSocketChannel.open();
     private boolean isRunning = true;
+    private boolean debug = true;
 
     /**
      * Create a new server and immediately binds it.
@@ -70,26 +70,29 @@ public abstract class WebServer implements Runnable {
                         } else if (key.isReadable()) {
                             //  get the client
                             SocketChannel client = (SocketChannel) key.channel();
-                            // reset our buffer
-                            buf.rewind();
-                            // read into it
-                            client.read(buf);
-                            // flip it so we can decode it
-                            buf.flip();
-                            // decode the bytes, handle it, and write the response
-                            client.write(encoder.encode(CharBuffer.wrap("HTTP/1.1 200 OK\r\n\r\n" + handle(client, decoder.decode(buf).toString()) + "\r\n")));
+                            // get the session
+                            HTTPSession session = (HTTPSession) key.attachment();
+                            // create it if it doesnt exist
+                            if (session == null) {
+                                session = new HTTPSession(client);
+                                key.attach(session);
+                            }
+                            // decode the message
+                            String line;
+                            while ((line = session.readLine()) != null) {
+                                session.writeLine("You said " + line);
+                            }
                         }
                     } catch (Exception ex) {
                         System.err.println("Error handling client: " + key.channel());
-                        System.err.println(ex);
-                        System.err.println("\tat " + ex.getStackTrace()[0]);
-                    } finally {
-                        if (key.channel() instanceof SocketChannel) {
-                            try {
-                                key.channel().close();
-                            } catch (IOException ex) {
-                                // too late to do anything here
-                            }
+                        if (debug) {
+                            ex.printStackTrace();
+                        } else {
+                            System.err.println(ex);
+                            System.err.println("\tat " + ex.getStackTrace()[0]);
+                        }
+                        if (key.attachment() instanceof HTTPSession) {
+                            ((HTTPSession) key.attachment()).close();
                         }
                     }
                 }
@@ -110,7 +113,9 @@ public abstract class WebServer implements Runnable {
      * @return the string to be sent to the client. Must not include HTTP
      * headers.
      */
-    protected abstract String handle(SocketChannel client, String request) throws IOException;
+    protected String handle(SocketChannel client, String request) throws IOException {
+        return null;
+    }
 
     /**
      * Shutdown this server, preventing it from handling any more requests.
@@ -123,11 +128,70 @@ public abstract class WebServer implements Runnable {
         } catch (IOException ex) {
             // do nothing, its game over
         }
-        buf = null;
         charset = null;
         decoder = null;
         encoder = null;
         selector = null;
         server = null;
+    }
+
+    public class HTTPSession {
+
+        private final SocketChannel channel;
+        private final ByteBuffer buffer = ByteBuffer.allocate(2048);
+        private int mark = 0;
+
+        public HTTPSession(SocketChannel channel) {
+            this.channel = channel;
+        }
+
+        /**
+         * Try to read a line.
+         */
+        public String readLine() throws IOException {
+            readData();
+            StringBuilder sb = new StringBuilder();
+            int l = -1;
+            while (buffer.hasRemaining()) {
+                char c = (char) buffer.get();
+                if (c == '\n' && l == '\r') {
+                    mark = buffer.position();
+                    return sb.substring(0, sb.length());
+                }
+                sb.append(c);
+                l = c;
+            }
+            return null;
+        }
+
+        private void readData() throws IOException {
+            buffer.limit(buffer.capacity());
+            buffer.position(mark);
+            int read = channel.read(buffer);
+            if (read == -1) {
+                throw new IOException("End of stream");
+            }
+            buffer.flip();
+            buffer.position(mark);
+        }
+
+        public void writeLine(String line) throws IOException {
+            channel.write(encoder.encode(CharBuffer.wrap(line + "\r\n")));
+        }
+
+        public void close() {
+            try {
+                channel.close();
+            } catch (IOException ex) {
+            }
+        }
+    }
+
+    public static void main(String[] args) throws Exception {
+        WebServer server = new WebServer(new InetSocketAddress(5555));
+        while (true) {
+            server.run();
+            Thread.sleep(100);
+        }
     }
 }

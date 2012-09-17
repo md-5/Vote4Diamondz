@@ -9,45 +9,66 @@
         <link href="css/bootstrap.min.css" rel="stylesheet">
         <link href="css/bootstrap-responsive.min.css" rel="stylesheet">
         <style>
+            body {
+                padding-top: 20px;
+                text-align: center;
+            }
             img {
-                padding-bottom: 10px;
+                border-radius: 10px;
+                -moz-border-radius: 10px;
+                -webkit-border-radius: 10px;
                 cursor: pointer;
+                padding: 5px 0px 5px 0px;
+            }
+            .alert {
+                display: none;
             }
         </style>
     </head>
 
     <body>
-        <div class="container row span12">
-            <h1>Vote Here!</h1>
-            <p>Use this panel to vote for this server on several voting sites.<br>Then press Submit to claim your reward!</p>
-            <form>
-                <label>Enter your Minecraft IGN</label>
-                <input type="text" placeholder="Minecraft IGN">
-                <span class="help-block">Name is case sensitive.</span>
-                <label>Click on each of the banners below to vote.</label>
-                <!-- Begin sites -->
-                <div>
-                    <img src="http://minecraftservers.net/images/serverpics/4696_IMG.png" data-site="http://google.com">
+        <div class="container">
+            <div class="row span12">
+                <div class="well">
+                    <h1>Vote Here!</h1>
+                    <p>Use this panel to vote for this server on several voting sites.<br>Then press Submit to claim your reward!</p>
                 </div>
-                <div>
-                    <img src="http://dl.dropbox.com/u/61952838/Screenshots/xtremetop100%20banner.png" data-site="http://google.com">
-                </div>
-                <div>
-                    <img src="https://dl.dropbox.com/u/61952838/Screenshots/tmlbanner-small.jpg" data-site="http://google.com">
-                </div>
-                <!-- End sites -->
-                <button type="submit" class="btn">Submit</button>
-            </form>
+                <hr>
+                <div class="alert alert-success">Thanks for voting!</div>
+                <form>
+                    <label>Enter your Minecraft IGN</label>
+                    <input type="text" placeholder="Minecraft IGN" id="username">
+                    <span class="help-block">Name is case sensitive.</span>
+                    <label>Click on each of the banners below to vote.</label>
+                    <!-- Begin sites -->
+                    <div>
+                        <img src="http://minecraftservers.net/images/serverpics/4696_IMG.png" data-site="http://google.com">
+                    </div>
+                    <div>
+                        <img src="http://dl.dropbox.com/u/61952838/Screenshots/xtremetop100%20banner.png" data-site="http://google.com">
+                    </div>
+                    <div>
+                        <img src="https://dl.dropbox.com/u/61952838/Screenshots/tmlbanner-small.jpg" data-site="http://google.com">
+                    </div>
+                    <!-- End sites -->
+                    <button type="submit" class="btn">Submit</button>
+                </form>
+            </div>
         </div>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>
         <script src="js/bootstrap.min.js"></script>
         <script type="text/javascript">
+            $(".alert").slideDown();
             $("img").click(function() {
-                window.open($(this).attr("data-site"),"_blank");
+                window.open($(this).attr("data-site"), "_blank");
             });
             $("form").submit(function(e) {
                 e.preventDefault();
-                alert("You submitted"); 
+                $.get("/vote/" + $("#username").val(), function(r) {
+                    $(".alert").addClass(r.style);
+                    $(".alert").html(r.message);
+                    $(".alert").slideDown();
+                });
             });
         </script>
     </body>
