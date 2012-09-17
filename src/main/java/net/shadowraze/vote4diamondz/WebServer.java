@@ -10,7 +10,10 @@ import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.StringTokenizer;
 
 /**
  * Simple Java non-blocking NIO webserver.
@@ -75,10 +78,17 @@ public class WebServer implements Runnable {
                                 session = new HTTPSession(client);
                                 key.attach(session);
                             }
+                            // get more data
+                            session.readData();
                             // decode the message
                             String line;
                             while ((line = session.readLine()) != null) {
-                                session.writeLine("You said " + line);
+                                // check if we have got everything
+                                if (line.isEmpty()) {
+                                    HTTPRequest request = new HTTPRequest(session.readLines.toString());
+                                    handle(session, request);
+                                    session.close();
+                                }
                             }
                         }
                     } catch (Exception ex) {
@@ -106,12 +116,11 @@ public class WebServer implements Runnable {
     /**
      * Handle a web request.
      *
-     * @param client
-     * @param request entire request as sent by the client.
+     * @param session the entire http session
      * @return the string to be sent to the client. Must not include HTTP
      * headers.
      */
-    protected String handle(SocketChannel client, String request) throws IOException {
+    protected String handle(HTTPSession session, HTTPRequest request) throws IOException {
         return null;
     }
 
@@ -126,16 +135,13 @@ public class WebServer implements Runnable {
         } catch (IOException ex) {
             // do nothing, its game over
         }
-        charset = null;
-        encoder = null;
-        selector = null;
-        server = null;
     }
 
     public final class HTTPSession {
 
         private final SocketChannel channel;
         private final ByteBuffer buffer = ByteBuffer.allocate(2048);
+        private final StringBuilder readLines = new StringBuilder();
         private int mark = 0;
 
         public HTTPSession(SocketChannel channel) {
@@ -146,16 +152,19 @@ public class WebServer implements Runnable {
          * Try to read a line.
          */
         public String readLine() throws IOException {
-            readData();
             StringBuilder sb = new StringBuilder();
             int l = -1;
             while (buffer.hasRemaining()) {
                 char c = (char) buffer.get();
-                if (c == '\n' && l == '\r') {
-                    mark = buffer.position();
-                    return sb.substring(0, sb.length());
-                }
                 sb.append(c);
+                if (c == '\n' && l == '\r') {
+                    // mark our position
+                    mark = buffer.position();
+                    // append to the total
+                    readLines.append(sb);
+                    // return with no line separators
+                    return sb.substring(0, sb.length() - 2);
+                }
                 l = c;
             }
             return null;
@@ -164,7 +173,7 @@ public class WebServer implements Runnable {
         /**
          * Get more data from the stream.
          */
-        private void readData() throws IOException {
+        public void readData() throws IOException {
             buffer.limit(buffer.capacity());
             int read = channel.read(buffer);
             if (read == -1) {
@@ -183,6 +192,78 @@ public class WebServer implements Runnable {
                 channel.close();
             } catch (IOException ex) {
             }
+        }
+    }
+
+    public static class HTTPRequest {
+
+        private final String raw;
+        private String method;
+        private String location;
+        private String version;
+        private Map<String, String> headers = new HashMap<String, String>();
+
+        public HTTPRequest(String raw) {
+            this.raw = raw;
+            parse();
+        }
+
+        private void parse() {
+            // parse the first line
+            StringTokenizer tokenizer = new StringTokenizer(raw);
+            method = tokenizer.nextToken().toUpperCase();
+            location = tokenizer.nextToken();
+            version = tokenizer.nextToken();
+            // parse the headers
+            String[] lines = raw.split("\r\n");
+            for (int i = 1; i < lines.length; i++) {
+                String[] keyVal = lines[i].split(":", 2);
+                headers.put(keyVal[0], keyVal[1]);
+            }
+        }
+
+        public String getMethod() {
+            return method;
+        }
+
+        public String getLocation() {
+            return location;
+        }
+
+        public String getHead(String key) {
+            return headers.get(key);
+        }
+    }
+
+    public static class HTTPResponse {
+
+        private String version = "HTTP/1.1";
+        private int responseCode = 200;
+        private String responseReason = "OK";
+        private Map<String, String> headers = new HashMap<String, String>();
+
+        public int getResponseCode() {
+            return responseCode;
+        }
+
+        public String getResponseReason() {
+            return responseReason;
+        }
+
+        public String getHeader(String header) {
+            return headers.get(header);
+        }
+
+        public void setResponseCode(int responseCode) {
+            this.responseCode = responseCode;
+        }
+
+        public void setResponseReason(String responseReason) {
+            this.responseReason = responseReason;
+        }
+
+        public void setHeader(String key, String value) {
+            headers.put(key, value);
         }
     }
 

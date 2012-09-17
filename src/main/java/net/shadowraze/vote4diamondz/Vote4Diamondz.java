@@ -43,48 +43,5 @@ public class Vote4Diamondz extends JavaPlugin {
         public VoteServer(InetSocketAddress address) throws IOException {
             super(address);
         }
-
-        @Override
-        protected String handle(SocketChannel client, String request) throws IOException {
-            StringTokenizer t = new StringTokenizer(request);
-            //
-            String method = t.nextToken();
-            if (!method.equals("GET")) {
-                return "Unsupported operation " + method;
-            }
-            // get the resource path
-            String path = t.nextToken();
-            // static resource
-            if (path.startsWith("/static")) {
-                path = path.substring("/static/".length());
-                InputStream in = getClass().getClassLoader().getResourceAsStream(path);
-                // does it exist
-                if (in != null) {
-                    BufferedReader br = new BufferedReader(new InputStreamReader(in));
-                    StringBuilder content = new StringBuilder();
-                    String line;
-                    while ((line = br.readLine()) != null) {
-                        content.append(line);
-                        content.append('\n');
-                    }
-                    br.close();
-                    return content.toString();
-                } else {
-                    return "Not found";
-                }
-            }
-            // api request
-            if (path.startsWith("/api")) {
-                path = path.substring("/api/".length());
-                if (path.startsWith("vote")) {
-                    path = path.substring("vote/".length());
-                    return "Thanks for voting: " + path;
-                } else if (path.startsWith("top")) {
-                    return "No top voters";
-                }
-            }
-            // its a request we need to handle
-            return "Don't know what to do next";
-        }
     }
 }
