@@ -34,7 +34,7 @@
                     <p>Use this panel to vote for this server on several voting sites.<br>Then press Submit to claim your reward!</p>
                 </div>
                 <hr>
-                <div class="alert alert-success">Thanks for voting!</div>
+                <div class="alert"></div>
                 <form>
                     <label>Enter your Minecraft IGN</label>
                     <input type="text" placeholder="Minecraft IGN" id="username">
@@ -56,19 +56,35 @@
             </div>
         </div>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>
-        <script src="js/bootstrap.min.js"></script>
         <script type="text/javascript">
-            $(".alert").slideDown();
+            var alert = $(".alert");
+            var sites = {};
             $("img").click(function() {
-                window.open($(this).attr("data-site"), "_blank");
+                var site = $(this).attr("data-site");
+                sites[site] = true;
+                window.open(site, "_blank");
             });
             $("form").submit(function(e) {
+                var valid = true;
                 e.preventDefault();
-                $.get("/vote/" + $("#username").val(), function(r) {
-                    $(".alert").addClass(r.style);
-                    $(".alert").html(r.message);
-                    $(".alert").slideDown();
+                $("img").each(function() {
+                    if (sites[$(this).attr("data-site")] == null) {
+                        alert.addClass("alert-error");
+                        alert.html("You have not voted on all sites");
+                        alert.slideDown();
+                        valid = false;   
+                    }
                 });
+                if (valid) {
+                    alert.removeClass("alert-error");
+                    alert.html("Processing your votes");
+                    alert.slideDown();
+                    $.get("/vote/" + $("#username").val(), function(r) {
+                        alert.addClass(r.style);
+                        alert.html(r.message);
+                        alert.slideDown();
+                    });
+                }
             });
         </script>
     </body>
