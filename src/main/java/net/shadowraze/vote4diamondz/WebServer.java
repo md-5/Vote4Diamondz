@@ -9,7 +9,6 @@ import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.Charset;
-import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
 import java.util.Iterator;
 
@@ -21,7 +20,6 @@ import java.util.Iterator;
 public class WebServer implements Runnable {
 
     private Charset charset = Charset.forName("UTF-8");
-    private CharsetDecoder decoder = charset.newDecoder();
     private CharsetEncoder encoder = charset.newEncoder();
     private Selector selector = Selector.open();
     private ServerSocketChannel server = ServerSocketChannel.open();
@@ -129,13 +127,12 @@ public class WebServer implements Runnable {
             // do nothing, its game over
         }
         charset = null;
-        decoder = null;
         encoder = null;
         selector = null;
         server = null;
     }
 
-    public class HTTPSession {
+    public final class HTTPSession {
 
         private final SocketChannel channel;
         private final ByteBuffer buffer = ByteBuffer.allocate(2048);
@@ -164,9 +161,11 @@ public class WebServer implements Runnable {
             return null;
         }
 
+        /**
+         * Get more data from the stream.
+         */
         private void readData() throws IOException {
             buffer.limit(buffer.capacity());
-            buffer.position(mark);
             int read = channel.read(buffer);
             if (read == -1) {
                 throw new IOException("End of stream");
