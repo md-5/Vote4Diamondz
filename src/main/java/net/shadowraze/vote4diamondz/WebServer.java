@@ -10,8 +10,10 @@ import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
 
@@ -86,7 +88,7 @@ public class WebServer implements Runnable {
                                 // check if we have got everything
                                 if (line.isEmpty()) {
                                     HTTPRequest request = new HTTPRequest(session.readLines.toString());
-                                    handle(session, request);
+                                    session.sendResponse(handle(session, request));
                                     session.close();
                                 }
                             }
@@ -117,11 +119,12 @@ public class WebServer implements Runnable {
      * Handle a web request.
      *
      * @param session the entire http session
-     * @return the string to be sent to the client. Must not include HTTP
-     * headers.
+     * @return the handled request
      */
-    protected String handle(HTTPSession session, HTTPRequest request) throws IOException {
-        return null;
+    protected HTTPResponse handle(HTTPSession session, HTTPRequest request) throws IOException {
+        HTTPResponse response = new HTTPResponse();
+        response.setContent("I liek cates".getBytes());
+        return response;
     }
 
     /**
@@ -183,8 +186,22 @@ public class WebServer implements Runnable {
             buffer.position(mark);
         }
 
-        public void writeLine(String line) throws IOException {
+        private void writeLine(String line) throws IOException {
             channel.write(encoder.encode(CharBuffer.wrap(line + "\r\n")));
+        }
+
+        public void sendResponse(HTTPResponse response) {
+            response.addDefaultHeaders();
+            try {
+                writeLine(response.version + " " + response.responseCode + " " + response.responseReason);
+                for (Map.Entry<String, String> header : response.headers.entrySet()) {
+                    writeLine(header.getKey() + ": " + header.getValue());
+                }
+                writeLine("");
+                channel.write(ByteBuffer.wrap(response.content));
+            } catch (IOException ex) {
+                // slow silently
+            }
         }
 
         public void close() {
@@ -240,7 +257,15 @@ public class WebServer implements Runnable {
         private String version = "HTTP/1.1";
         private int responseCode = 200;
         private String responseReason = "OK";
-        private Map<String, String> headers = new HashMap<String, String>();
+        private Map<String, String> headers = new LinkedHashMap<String, String>();
+        private byte[] content;
+
+        private void addDefaultHeaders() {
+            headers.put("Date", new Date().toString());
+            headers.put("Server", "Java NIO Webserver by md_5");
+            headers.put("Connection", "close");
+            headers.put("Content-Length", Integer.toString(content.length));
+        }
 
         public int getResponseCode() {
             return responseCode;
@@ -254,12 +279,20 @@ public class WebServer implements Runnable {
             return headers.get(header);
         }
 
+        public byte[] getContent() {
+            return content;
+        }
+
         public void setResponseCode(int responseCode) {
             this.responseCode = responseCode;
         }
 
         public void setResponseReason(String responseReason) {
             this.responseReason = responseReason;
+        }
+
+        public void setContent(byte[] content) {
+            this.content = content;
         }
 
         public void setHeader(String key, String value) {
