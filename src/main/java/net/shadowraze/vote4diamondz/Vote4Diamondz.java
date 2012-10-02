@@ -1,13 +1,10 @@
 package net.shadowraze.vote4diamondz;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class Vote4Diamondz extends JavaPlugin {
-
-    private WebServer voteServer;
 
     @Override
     public void onEnable() {
@@ -17,26 +14,10 @@ public class Vote4Diamondz extends JavaPlugin {
         saveConfig();
         // start the server
         try {
-            voteServer = new VoteServer(new InetSocketAddress(conf.getString("host"), conf.getInt("port")));
-            getServer().getScheduler().scheduleSyncRepeatingTask(this, voteServer, 0, conf.getInt("pollinterval"));
-        } catch (IOException ex) {
+        } catch (Exception ex) {
             getLogger().severe("Could not start vote server: ");
             ex.printStackTrace();
             getServer().getPluginManager().disablePlugin(this);
-        }
-    }
-
-    @Override
-    public void onDisable() {
-        if (voteServer != null) {
-            voteServer.shutdown();
-        }
-    }
-
-    private class VoteServer extends WebServer {
-
-        public VoteServer(InetSocketAddress address) throws IOException {
-            super(address);
         }
     }
 }
