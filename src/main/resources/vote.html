@@ -68,14 +68,12 @@
                 e.preventDefault();
                 $("img").each(function() {
                     if (sites[$(this).attr("data-site")] == null) {
-                        alert.addClass("alert-error");
                         alert.html("You have not voted on all sites");
                         alert.slideDown();
-                        valid = false;   
+                        valid = false;
                     }
                 });
                 if (valid) {
-                    alert.removeClass("alert-error");
                     alert.html("Processing your votes");
                     alert.slideDown();
                     $.get("/vote/" + $("#username").val(), function(r) {

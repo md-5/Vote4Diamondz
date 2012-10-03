@@ -109,6 +109,8 @@ public final class Vote4Diamondz extends JavaPlugin {
                     }
                 }
             }, nagInterval, nagInterval);
+            // start metrics
+            new Metrics(this).start();
         } catch (Exception ex) {
             getLogger().severe("Could initialise Vote4Diamondz:\t");
             ex.printStackTrace();
