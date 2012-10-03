@@ -6,8 +6,9 @@ import com.alta189.simplesave.Field;
 import com.alta189.simplesave.Id;
 import com.alta189.simplesave.Table;
 import com.alta189.simplesave.sqlite.SQLiteConfiguration;
+import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.InetSocketAddress;
 import java.text.MessageFormat;
 import java.util.List;
@@ -21,12 +22,11 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.AbstractHandler;
-import org.eclipse.jetty.util.IO;
 
 public final class Vote4Diamondz extends JavaPlugin {
 
     private Server server;
-    private Database database = DatabaseFactory.createNewDatabase(new SQLiteConfiguration("votes.db"));
+    private Database database = DatabaseFactory.createNewDatabase(new SQLiteConfiguration("plugins/Vote4Diamondz/votes.sqlite"));
     // config stuff
     private int voteInterval;
     private List<String> rewards;
@@ -117,9 +117,14 @@ public final class Vote4Diamondz extends JavaPlugin {
         private final byte[] votePage;
 
         public VoteHandler() throws IOException {
-            InputStream input = getClass().getClassLoader().getResourceAsStream("vote.html");
-            votePage = IO.readBytes(input);
-            input.close();
+            BufferedReader br = new BufferedReader(new InputStreamReader(getResource("vote.html")));
+            StringBuilder out = new StringBuilder();
+            String line;
+            while ((line = br.readLine()) != null) {
+                out.append(line.trim());
+            }
+            br.close();
+            votePage = out.toString().getBytes();
         }
 
         @Override
