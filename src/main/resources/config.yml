@@ -1,4 +1,12 @@
 # ${project.name} config
 host: 0.0.0.0
 port: 5555
-pollinterval: 2
+voteInterval: 86400
+rewards:
+  - give {0} diamond 5
+  - give {0} stone 128
+checkIP: true
+notOnline: You are not online
+wrongIP: The player you have selected does not have the same ip as you
+tooSoon: You have already voted in the last 24 hours
+thanks: Thanks for voting using Vote4Diamondz by md_5. Your vote is appreciated.

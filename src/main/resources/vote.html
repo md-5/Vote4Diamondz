@@ -79,8 +79,7 @@
                     alert.html("Processing your votes");
                     alert.slideDown();
                     $.get("/vote/" + $("#username").val(), function(r) {
-                        alert.addClass(r.style);
-                        alert.html(r.message);
+                        alert.html(r);
                         alert.slideDown();
                     });
                 }
