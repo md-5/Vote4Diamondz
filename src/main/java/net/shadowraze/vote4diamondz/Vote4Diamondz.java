@@ -7,8 +7,9 @@ import com.alta189.simplesave.Id;
 import com.alta189.simplesave.Table;
 import com.alta189.simplesave.sqlite.SQLiteConfiguration;
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.InetSocketAddress;
 import java.text.MessageFormat;
 import java.util.List;
@@ -16,6 +17,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -35,24 +37,47 @@ public final class Vote4Diamondz extends JavaPlugin {
     private byte[] wrongIP;
     private byte[] tooSoon;
     private byte[] thanks;
+    private String nagMessage;
+    private String broadcastMessage;
+    // vote page
+    private byte[] votePage;
 
     @Override
     public void onEnable() {
-        // load the config
-        FileConfiguration conf = getConfig();
-        conf.options().copyDefaults(true);
-        saveConfig();
-        // config keys
-        voteInterval = conf.getInt("voteInterval");
-        rewards = conf.getStringList("rewards");
-        checkIP = conf.getBoolean("checkIP");
-        notOnline = conf.getString("notOnline").getBytes();
-        wrongIP = conf.getString("wrongIP").getBytes();
-        tooSoon = conf.getString("tooSoon").getBytes();
-        thanks = conf.getString("thanks").getBytes();
+        // catch all the errors
         try {
+            // load the config
+            FileConfiguration conf = getConfig();
+            conf.options().copyDefaults(true);
+            saveConfig();
+            // load the page
+            File page = new File(getDataFolder(), "vote.html");
+            // copy it over
+            if (!page.exists()) {
+                saveResource("vote.html", false);
+            }
+            // into ram it goes, minified too
+            BufferedReader br = new BufferedReader(new FileReader(page));
+            StringBuilder out = new StringBuilder();
+            String line;
+            while ((line = br.readLine()) != null) {
+                out.append(line.trim());
+            }
+            br.close();
+            votePage = out.toString().getBytes();
+            // config keys
+            voteInterval = conf.getInt("voteInterval");
+            rewards = conf.getStringList("rewards");
+            checkIP = conf.getBoolean("checkIP");
+            notOnline = conf.getString("notOnline").getBytes();
+            wrongIP = conf.getString("wrongIP").getBytes();
+            tooSoon = conf.getString("tooSoon").getBytes();
+            thanks = conf.getString("thanks").getBytes();
+            nagMessage = ChatColor.translateAlternateColorCodes('&', conf.getString("nag"));
+            broadcastMessage = ChatColor.translateAlternateColorCodes('&', conf.getString("broadcastMessage"));
             // init the db
             database.registerTable(VoteEntry.class);
+            database.registerTable(VoteHistory.class);
             // open the db
             database.connect();
             // start the server
@@ -71,8 +96,21 @@ public final class Vote4Diamondz extends JavaPlugin {
                     }
                 }
             });
+            // start the nagger
+            int nagInterval = conf.getInt("nagInterval") * 20;
+            getServer().getScheduler().scheduleAsyncRepeatingTask(this, new Runnable() {
+                @Override
+                public void run() {
+                    for (Player player : getServer().getOnlinePlayers()) {
+                        VoteEntry entry = getEntry(player.getName());
+                        if (canVote(entry)) {
+                            player.sendMessage(nagMessage);
+                        }
+                    }
+                }
+            }, nagInterval, nagInterval);
         } catch (Exception ex) {
-            getLogger().severe("Could initialise database:\t");
+            getLogger().severe("Could initialise Vote4Diamondz:\t");
             ex.printStackTrace();
             getServer().getPluginManager().disablePlugin(this);
         }
@@ -94,13 +132,12 @@ public final class Vote4Diamondz extends JavaPlugin {
         return (int) (System.currentTimeMillis() / 1000L);
     }
 
-    private static Player getPlayerExact(String name) {
-        for (Player player : Bukkit.getServer().getOnlinePlayers()) {
-            if (player.getName().equals(name)) {
-                return player;
-            }
-        }
-        return null;
+    private VoteEntry getEntry(String user) {
+        return database.select(VoteEntry.class).where().equal("name", user).execute().findOne();
+    }
+
+    private boolean canVote(VoteEntry entry) {
+        return entry == null || entry.lastVote + voteInterval > getTime();
     }
 
     @Table("votes")
@@ -123,20 +160,29 @@ public final class Vote4Diamondz extends JavaPlugin {
         }
     }
 
-    private class VoteHandler extends AbstractHandler {
+    @Table("history")
+    public static class VoteHistory {
 
-        private final byte[] votePage;
+        @Id
+        private int id;
+        @Field
+        private String user;
+        @Field
+        private String ip;
+        @Field
+        private int time;
 
-        public VoteHandler() throws IOException {
-            BufferedReader br = new BufferedReader(new InputStreamReader(getResource("vote.html")));
-            StringBuilder out = new StringBuilder();
-            String line;
-            while ((line = br.readLine()) != null) {
-                out.append(line.trim());
-            }
-            br.close();
-            votePage = out.toString().getBytes();
+        public VoteHistory() {
         }
+
+        public VoteHistory(String user, String ip) {
+            this.user = user;
+            this.ip = ip;
+            this.time = getTime();
+        }
+    }
+
+    private class VoteHandler extends AbstractHandler {
 
         @Override
         public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
@@ -151,20 +197,28 @@ public final class Vote4Diamondz extends JavaPlugin {
                 // extract everything after the vote path
                 String user = url.substring(vote.length());
                 // grab the player whom is trying to vote
-                Player player = getPlayerExact(user);
+                Player player = null;
+                for (Player p : Bukkit.getServer().getOnlinePlayers()) {
+                    if (p.getName().equals(user)) {
+                        player = p;
+                        break;
+                    }
+                }
+                // store web ip
+                String ip = request.getRemoteAddr();
                 // check they are online
                 if (player == null) {
                     // send not online error
                     resp = notOnline;
                 } // check they come from the same ip
-                else if (checkIP && !player.getAddress().getAddress().getHostAddress().equals(request.getRemoteAddr())) {
+                else if (checkIP && !player.getAddress().getAddress().getHostAddress().equals(ip)) {
                     // send wrong ip error
                     resp = wrongIP;
                 } else {
                     // select old entry
-                    VoteEntry entry = database.select(VoteEntry.class).where().equal("name", user).execute().findOne();
+                    VoteEntry entry = getEntry(user);
                     // check time has passed
-                    if (entry != null && entry.lastVote + voteInterval > getTime()) {
+                    if (!canVote(entry)) {
                         // set time error
                         resp = tooSoon;
                     } else {
@@ -184,6 +238,13 @@ public final class Vote4Diamondz extends JavaPlugin {
                             String command = MessageFormat.format(reward, user);
                             // dispatch the reward
                             Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), command);
+                            // broadcast
+                            if (broadcastMessage != null && !broadcastMessage.isEmpty()) {
+                                Bukkit.getServer().broadcastMessage(MessageFormat.format(broadcastMessage, user));
+                            }
+                            // log the request
+                            VoteHistory log = new VoteHistory(user, ip);
+                            database.save(log);
                         }
                         // set thanks message
                         resp = thanks;
