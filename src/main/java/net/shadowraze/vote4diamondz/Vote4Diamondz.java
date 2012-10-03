@@ -5,6 +5,7 @@ import com.alta189.simplesave.DatabaseFactory;
 import com.alta189.simplesave.Field;
 import com.alta189.simplesave.Id;
 import com.alta189.simplesave.Table;
+import com.alta189.simplesave.query.OrderQuery;
 import com.alta189.simplesave.sqlite.SQLiteConfiguration;
 import java.io.BufferedReader;
 import java.io.File;
@@ -194,8 +195,28 @@ public final class Vote4Diamondz extends JavaPlugin {
             String vote = "/vote/";
             // default response
             byte[] resp = votePage;
-            // see if someone is voting
-            if (url.startsWith(vote)) {
+            // top votes
+            if (url.startsWith("/top")) {
+                // start select
+                OrderQuery<VoteEntry> query = database.select(VoteEntry.class).order();
+                // build query
+                query.getPairs().add(new OrderQuery.OrderPair("voteCount", OrderQuery.Order.DESC));
+                // get results
+                List<VoteEntry> top = query.execute().find();
+                // build output
+                StringBuilder out = new StringBuilder();
+                // loop entries
+                for (VoteEntry entry : top) {
+                    out.append("<li>");
+                    out.append(entry.name);
+                    out.append(" has voted ");
+                    out.append(entry.voteCount);
+                    out.append(" times </li>");
+                }
+                // set output
+                resp = out.toString().getBytes();
+                // see if someone is voting
+            } else if (url.startsWith(vote)) {
                 // extract everything after the vote path
                 String user = url.substring(vote.length());
                 // grab the player whom is trying to vote
