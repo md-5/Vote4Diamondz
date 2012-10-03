@@ -56,12 +56,23 @@ public final class Vote4Diamondz extends JavaPlugin {
             // open the db
             database.connect();
             // start the server
-            InetSocketAddress bind = new InetSocketAddress(conf.getString("host"), conf.getInt("port"));
-            server = new Server(bind);
-            server.setHandler(new VoteHandler());
-            server.start();
+            final InetSocketAddress bind = new InetSocketAddress(conf.getString("host"), conf.getInt("port"));
+            getServer().getScheduler().scheduleAsyncDelayedTask(this, new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        server = new Server(bind);
+                        server.setHandler(new VoteHandler());
+                        server.start();
+                    } catch (Exception ex) {
+                        getLogger().severe("Could not start vote server:\t");
+                        ex.printStackTrace();
+                        getServer().getPluginManager().disablePlugin(Vote4Diamondz.this);
+                    }
+                }
+            });
         } catch (Exception ex) {
-            getLogger().severe("Could not start vote server:\t");
+            getLogger().severe("Could initialise database:\t");
             ex.printStackTrace();
             getServer().getPluginManager().disablePlugin(this);
         }
