@@ -6,9 +6,9 @@ rewards:
   - give {0} diamond 5
   - give {0} stone 128
 checkIP: true
-nagInterval: 5
-nag: &1Please vote for the server
-broadcastMessage: '&3 {0} voted for the server, you can too at md-5.net'
+nagInterval: 300
+nag: '&eHey {0} we noticed you have not yet voted for us today. Please do so at md-5.net'
+broadcastMessage: '&5 {0} voted for the server, you can too at md-5.net'
 notOnline: You are not online
 wrongIP: The player you have selected does not have the same ip as you
 tooSoon: You have already voted in the last 24 hours

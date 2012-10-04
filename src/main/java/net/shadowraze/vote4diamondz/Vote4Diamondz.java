@@ -105,7 +105,7 @@ public final class Vote4Diamondz extends JavaPlugin {
                     for (Player player : getServer().getOnlinePlayers()) {
                         VoteEntry entry = getEntry(player.getName());
                         if (canVote(entry)) {
-                            player.sendMessage(nagMessage);
+                            player.sendMessage(MessageFormat.format(nagMessage, player.getName()));
                         }
                     }
                 }
@@ -140,7 +140,7 @@ public final class Vote4Diamondz extends JavaPlugin {
     }
 
     private boolean canVote(VoteEntry entry) {
-        return entry == null || entry.lastVote + voteInterval > getTime();
+        return entry == null || entry.lastVote + voteInterval < getTime();
     }
 
     @Table("votes")
@@ -261,14 +261,14 @@ public final class Vote4Diamondz extends JavaPlugin {
                             String command = MessageFormat.format(reward, user);
                             // dispatch the reward
                             Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), command);
-                            // broadcast
-                            if (broadcastMessage != null && !broadcastMessage.isEmpty()) {
-                                Bukkit.getServer().broadcastMessage(MessageFormat.format(broadcastMessage, user));
-                            }
-                            // log the request
-                            VoteHistory log = new VoteHistory(user, ip);
-                            database.save(log);
                         }
+                        // broadcast
+                        if (broadcastMessage != null && !broadcastMessage.isEmpty()) {
+                            Bukkit.getServer().broadcastMessage(MessageFormat.format(broadcastMessage, user));
+                        }
+                        // log the request
+                        VoteHistory log = new VoteHistory(user, ip);
+                        database.save(log);
                         // set thanks message
                         resp = thanks;
                     }
