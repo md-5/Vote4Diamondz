@@ -209,9 +209,13 @@ public final class Vote4Diamondz extends JavaPlugin {
                 for (VoteEntry entry : top) {
                     out.append("<li>");
                     out.append(entry.name);
-                    out.append(" has voted ");
+                    out.append(" - ");
                     out.append(entry.voteCount);
-                    out.append(" times </li>");
+                    out.append(" vote");
+                    if (entry.voteCount > 1) {
+                        out.append("s");
+                    }
+                    out.append("</li>");
                 }
                 // set output
                 resp = out.toString().getBytes();

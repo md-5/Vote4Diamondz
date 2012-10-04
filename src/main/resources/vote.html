@@ -22,6 +22,9 @@
             .alert {
                 display: none;
             }
+            ol {
+                margin: auto;
+            }
         </style>
     </head>
 
@@ -52,12 +55,25 @@
                     <!-- End sites -->
                     <button type="submit" class="btn">Submit</button>
                 </form>
+                <hr>
+                <div class="row span6 offset3">
+                    <div class="well well-small">
+                        <h2>Top Voters</h2>
+                        <ol id="top-voters"></ol>
+                    </div>
+                </div>
             </div>
         </div>
         <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>
         <script type="text/javascript">
             var alert = $(".alert");
             var sites = {};
+            $(function(){
+                var top = $("#top-voters");
+                $.get("/top/", function(r) {
+                    top.html(r);
+                });
+            });
             $("img").click(function() {
                 var site = $(this).attr("data-site");
                 sites[site] = true;
