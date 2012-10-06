@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.text.MessageFormat;
 import java.util.List;
+import java.util.Random;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -33,6 +34,7 @@ public final class Vote4Diamondz extends JavaPlugin {
     // config stuff
     private int voteInterval;
     private List<String> rewards;
+    private boolean randomReward;
     private boolean checkIP;
     private byte[] notOnline;
     private byte[] wrongIP;
@@ -69,6 +71,7 @@ public final class Vote4Diamondz extends JavaPlugin {
             // config keys
             voteInterval = conf.getInt("voteInterval");
             rewards = conf.getStringList("rewards");
+            randomReward = conf.getBoolean("randomReward");
             checkIP = conf.getBoolean("checkIP");
             notOnline = conf.getString("notOnline").getBytes();
             wrongIP = conf.getString("wrongIP").getBytes();
@@ -260,11 +263,17 @@ public final class Vote4Diamondz extends JavaPlugin {
                         // save updated entry
                         database.save(entry);
                         // dispatch their reward
-                        for (String reward : rewards) {
-                            // format their command
-                            String command = MessageFormat.format(reward, user);
-                            // dispatch the reward
-                            Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), command);
+                        if (randomReward) {
+                            String choice = rewards.get(new Random().nextInt(rewards.size()));
+                            // format and dispatch
+                            Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), MessageFormat.format(choice, user));
+                        } else {
+                            for (String reward : rewards) {
+                                // format their command
+                                String command = MessageFormat.format(reward, user);
+                                // dispatch the reward
+                                Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), command);
+                            }
                         }
                         // broadcast
                         if (broadcastMessage != null && !broadcastMessage.isEmpty()) {

@@ -5,6 +5,7 @@ voteInterval: 86400
 rewards:
   - give {0} diamond 5
   - give {0} stone 128
+randomReward: false
 checkIP: true
 nagInterval: 300
 nag: '&eHey {0} we noticed you have not yet voted for us today. Please do so at md-5.net'
