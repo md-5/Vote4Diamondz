@@ -1,0 +1,7 @@
+# This is where you put your servers.
+# Lines starting with # are ignored.
+# Servers are made up of vote url and banner url. Separated by a space, 1 per line.
+
+http://www.minecraftserverfinder.com/vote.php?id=YOURSERVER http://www.minecraftserverfinder.com/rank.php?id=YOURSERVER
+http://minecraft-server-list.com/server/YOURSERVER/vote/ http://minecraft-server-list.com/server/logo/YOURSERVER.png
+http://minecraftservers.net/vote.php?id=YOURSERVER http://minecraftservers.net/images/serverpics/YOURSERVER.png

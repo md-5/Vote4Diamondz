@@ -11,9 +11,12 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.InetSocketAddress;
 import java.text.MessageFormat;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -53,18 +56,44 @@ public final class Vote4Diamondz extends JavaPlugin {
             FileConfiguration conf = getConfig();
             conf.options().copyDefaults(true);
             saveConfig();
-            // load the page
-            File page = new File(getDataFolder(), "vote.html");
-            // copy it over
-            if (!page.exists()) {
-                saveResource("vote.html", false);
+            // load sites
+            File siteFile = new File(getDataFolder(), "sites.txt");
+            if (!siteFile.exists()) {
+                // copy default
+                saveResource("sites.txt", false);
             }
-            // into ram it goes, minified too
-            BufferedReader br = new BufferedReader(new FileReader(page));
-            StringBuilder out = new StringBuilder();
+            Map<String, String> sites = new HashMap<String, String>();
+            BufferedReader sr = new BufferedReader(new FileReader(siteFile));
             String line;
+            while ((line = sr.readLine()) != null) {
+                line = line.trim();
+                String[] split = line.split(" ");
+                if (!line.startsWith("#") && split.length == 2) {
+                    String site = split[0];
+                    String banner = split[1];
+                    sites.put(site, banner);
+                    getLogger().info("Registered site: " + site + " with banner: " + banner);
+                }
+            }
+            sr.close();
+            // load page, into ram it goes, minified too
+            BufferedReader br = new BufferedReader(new InputStreamReader(getResource("vote.html")));
+            StringBuilder out = new StringBuilder();
             while ((line = br.readLine()) != null) {
-                out.append(line.trim());
+                line = line.trim();
+                out.append(line);
+                // add servers
+                if (line.equals("<!-- Begin sites -->")) {
+                    for (Map.Entry<String, String> entry : sites.entrySet()) {
+                        out.append("<div><img src=\"");
+                        // image
+                        out.append(entry.getValue());
+                        out.append("\" data-site=\"");
+                        // site
+                        out.append(entry.getKey());
+                        out.append("\"></div>");
+                    }
+                }
             }
             br.close();
             votePage = out.toString().getBytes();
