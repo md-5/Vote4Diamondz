@@ -1,4 +1,4 @@
-package net.shadowraze.vote4diamondz;
+package net.md_5.vote4diamondz;
 
 import com.alta189.simplesave.Database;
 import com.alta189.simplesave.DatabaseFactory;

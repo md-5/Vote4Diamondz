@@ -25,7 +25,7 @@
  * authors and contributors and should not be interpreted as representing official policies,
  * either expressed or implied, of anybody else.
  */
-package net.shadowraze.vote4diamondz;
+package net.md_5.vote4diamondz;
 
 import java.io.BufferedReader;
 import java.io.File;

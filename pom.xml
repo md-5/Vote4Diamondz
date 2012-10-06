@@ -3,7 +3,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>net.shadowraze</groupId>
+    <groupId>net.md-5</groupId>
     <artifactId>vote4diamondz</artifactId>
     <version>dev-SNAPSHOT</version>
     <packaging>jar</packaging>
@@ -89,15 +89,15 @@
                             <relocations>
                                 <relocation>
                                     <pattern>javax.servlet</pattern>
-                                    <shadedPattern>net.shadowraze.lib</shadedPattern>
+                                    <shadedPattern>net.md_5.lib</shadedPattern>
                                 </relocation>
                                 <relocation>
                                     <pattern>com.alta189.simplesave</pattern>
-                                    <shadedPattern>net.shadowraze.lib</shadedPattern>
+                                    <shadedPattern>net.md_5.lib</shadedPattern>
                                 </relocation>
                                 <relocation>
                                     <pattern>org.eclipse.jetty</pattern>
-                                    <shadedPattern>net.shadowraze.lib</shadedPattern>
+                                    <shadedPattern>net.md_5.lib</shadedPattern>
                                 </relocation>
                             </relocations>
                         </configuration>
