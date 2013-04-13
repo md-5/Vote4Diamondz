@@ -4,4 +4,4 @@ description: ${project.description}
 author: md_5
 website: ${project.url}
 
-main: net.md_5.vote4diamondz.Vote4Diamondz
+main: net.md_5.v4d.Vote4Diamondz

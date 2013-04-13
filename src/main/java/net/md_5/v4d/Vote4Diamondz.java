@@ -1,4 +1,4 @@
-package net.md_5.vote4diamondz;
+package net.md_5.v4d;
 
 import com.alta189.simplesave.Database;
 import com.alta189.simplesave.DatabaseFactory;
@@ -6,6 +6,7 @@ import com.alta189.simplesave.Field;
 import com.alta189.simplesave.Id;
 import com.alta189.simplesave.Table;
 import com.alta189.simplesave.query.OrderQuery;
+import com.alta189.simplesave.query.SelectQuery;
 import com.alta189.simplesave.sqlite.SQLiteConfiguration;
 import java.io.BufferedReader;
 import java.io.File;
@@ -29,6 +30,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.AbstractHandler;
+import org.mcstats.Metrics;
 
 public final class Vote4Diamondz extends JavaPlugin {
 
@@ -45,6 +47,7 @@ public final class Vote4Diamondz extends JavaPlugin {
     private byte[] thanks;
     private String nagMessage;
     private String broadcastMessage;
+    private int topUsers;
     // vote page
     private byte[] votePage;
 
@@ -108,6 +111,7 @@ public final class Vote4Diamondz extends JavaPlugin {
             thanks = conf.getString("thanks").getBytes();
             nagMessage = ChatColor.translateAlternateColorCodes('&', conf.getString("nag"));
             broadcastMessage = ChatColor.translateAlternateColorCodes('&', conf.getString("broadcastMessage"));
+            topUsers = conf.getInt("topUsers");
             // init the db
             database.registerTable(VoteEntry.class);
             database.registerTable(VoteHistory.class);
@@ -230,9 +234,10 @@ public final class Vote4Diamondz extends JavaPlugin {
             // top votes
             if (url.startsWith("/top")) {
                 // start select
-                OrderQuery<VoteEntry> query = database.select(VoteEntry.class).order();
+                SelectQuery<VoteEntry> query = database.select(VoteEntry.class);
                 // build query
-                query.getPairs().add(new OrderQuery.OrderPair("voteCount", OrderQuery.Order.DESC));
+                query.order().getPairs().add(new OrderQuery.OrderPair("voteCount", OrderQuery.Order.DESC));
+                query.limit().setLimit(topUsers);
                 // get results
                 List<VoteEntry> top = query.execute().find();
                 // build output

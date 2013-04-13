@@ -6,13 +6,13 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta name="description" content="Vote for your favourite Minecraft server here!">
         <meta name="author" content="md_5">
-        <link href="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.1.1/css/bootstrap-combined.min.css" rel="stylesheet">
+        <link href="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.2/css/bootstrap-combined.min.css" rel="stylesheet">
         <style>
             body {
                 padding-top: 20px;
                 text-align: center;
             }
-            img {
+            form img {
                 border-radius: 10px;
                 -moz-border-radius: 10px;
                 -webkit-border-radius: 10px;
@@ -73,8 +73,8 @@
             $("form").submit(function(e) {
                 var valid = true;
                 e.preventDefault();
-                $("img").each(function() {
-                    if (sites[$(this).attr("data-site")] == null) {
+                $("form img").each(function() {
+                    if (sites[$(this).attr("data-site")] === null) {
                         alert.html("You have not voted on all sites");
                         alert.slideDown();
                         valid = false;

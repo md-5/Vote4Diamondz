@@ -21,29 +21,33 @@
         <dependency>
             <groupId>org.bukkit</groupId>
             <artifactId>bukkit</artifactId>
-            <version>1.3.2-R1.1-SNAPSHOT</version>
+            <version>1.4.6-R0.3</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-server</artifactId>
-            <version>8.1.7.v20120910</version>
+            <version>8.1.8.v20121106</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mcstats</groupId>
+            <artifactId>metrics</artifactId>
+            <version>R6</version>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>com.alta189</groupId>
             <artifactId>simplesave</artifactId>
             <version>1.2.0-SNAPSHOT</version>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
 
     <repositories>
         <repository>
-            <id>repobo-snap</id>
-            <url>http://repo.bukkit.org/content/groups/public</url>
-        </repository>
-        <repository>
-            <id>alta189-nexus</id>
-            <url>http://repo.alta189.com/</url>
+            <id>md_5-public</id>
+            <url>http://repo.md-5.net/content/groups/public</url>
         </repository>
     </repositories>
 
@@ -89,15 +93,15 @@
                             <relocations>
                                 <relocation>
                                     <pattern>javax.servlet</pattern>
-                                    <shadedPattern>net.md_5.lib</shadedPattern>
+                                    <shadedPattern>net.md_5.v4d.lib</shadedPattern>
                                 </relocation>
                                 <relocation>
                                     <pattern>com.alta189.simplesave</pattern>
-                                    <shadedPattern>net.md_5.lib</shadedPattern>
+                                    <shadedPattern>net.md_5.v4d.lib</shadedPattern>
                                 </relocation>
                                 <relocation>
                                     <pattern>org.eclipse.jetty</pattern>
-                                    <shadedPattern>net.md_5.lib</shadedPattern>
+                                    <shadedPattern>net.md_5.v4d.lib</shadedPattern>
                                 </relocation>
                             </relocations>
                         </configuration>
